@@ -1,0 +1,33 @@
+# Scaled Dot-Product Attention
+
+The core attention operation maps queries, keys, and values into a weighted mixture of value vectors.
+
+$$
+\operatorname{Attention}(Q, K, V) =
+\operatorname{softmax}\left(\frac{QK^\top}{\sqrt{d_k}}\right)V
+$$
+
+Here, $Q$ asks what each token is looking for, $K$ describes what each token offers, and $V$ carries the information that gets mixed after the attention weights are computed.
+
+## Shape Check
+
+For a sequence length $n$ and key dimension $d_k$:
+
+| Symbol | Shape | Meaning |
+| ------ | -----| ------- |
+| $Q$ | $n \times d_k$ | Query vectors |
+| $K$ | $n \times d_k$ | Key vectors |
+| $V$ | $n \times d_v$ | Value vectors |
+| $QK^\top$ | $n \times n$ | Pairwise token scores |
+
+The division by $\sqrt{d_k}$ keeps the logits from growing too large as the dimension increases.
+
+## Implementation Note
+
+In code, the softmax is usually applied across the last dimension of the score matrix:
+
+```ts
+const scores = q @ transpose(k);
+const weights = softmax(scores / Math.sqrt(dK));
+const output = weights @ v;
+```

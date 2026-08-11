@@ -1,0 +1,85 @@
+import { ProjectCallout, ProjectDecision, ProjectGallery, ProjectMetric, ProjectMetrics } from "@/components/projects/ProjectContent"
+
+## Context
+
+I wanted a portfolio that could do more than display a short biography. It needed to work as a technical publishing space, make longer articles pleasant to read, and give me a practical way to manage content without exposing editorial tools publicly.
+
+The result is a portfolio and content platform built as one cohesive Next.js application. Public project and article pages stay focused and fast, while authenticated management tools live in a separate admin workspace.
+
+<ProjectCallout title="My responsibility">
+  I designed and implemented the interface, content model, authentication flow, database schema, MDX pipeline, and admin experience.
+</ProjectCallout>
+
+## The problem
+
+A conventional portfolio template was too restrictive for technical writing, but a general-purpose CMS would add unnecessary operational complexity. The system needed to support rich long-form content while keeping publishing data structured enough for categories, filters, drafts, and future analytics.
+
+The main constraints were:
+
+- Project case studies should remain portable, reviewable in Git, and simple to deploy.
+- Article metadata needed drafts, publishing status, taxonomy, and editing tools.
+- Admin operations had to be restricted to an explicit user allowlist.
+- Public pages needed to work without shipping a large client-side content application.
+
+## Solution
+
+I split content according to how it is maintained. Project case studies are local MDX because they change infrequently and benefit from code review. Articles combine PostgreSQL metadata with local MDX bodies, giving the admin system structured publishing controls without losing the flexibility of Markdown.
+
+<ProjectMetrics>
+  <ProjectMetric value="2" label="Content workflows" detail="Git-managed projects and admin-managed articles" />
+  <ProjectMetric value="6" label="Core data tables" detail="Taxonomy, posts, tags, and engagement data" />
+  <ProjectMetric value="3" label="Protected API groups" detail="Posts, categories, and subcategories" />
+</ProjectMetrics>
+
+## Architecture
+
+<ProjectGallery
+  items={[
+    {
+      eyebrow: "Public experience",
+      title: "Static project case studies",
+      description: "Typed metadata drives project cards and routes, while MDX provides the long-form narrative.",
+    },
+    {
+      eyebrow: "Editorial experience",
+      title: "Authenticated article admin",
+      description: "Supabase verifies the administrator before protected route handlers write through Drizzle.",
+    },
+    {
+      eyebrow: "Storage",
+      title: "PostgreSQL plus local MDX",
+      description: "Structured metadata supports filtering and status, while article bodies remain readable files.",
+    },
+  ]}
+/>
+
+The public application reads project metadata directly from a typed registry. At build time, Next.js generates a route for each registered slug and bundles the matching MDX file. Unknown project paths return a 404.
+
+The article workflow uses PostgreSQL for searchable metadata and taxonomy. Article bodies are written as MDX files, keeping content portable and compatible with the same rendering system used by projects.
+
+## Important decisions
+
+<ProjectDecision title="MDX for project case studies" tradeoff="Updating a project requires a code change and deployment.">
+  Projects are curated portfolio artifacts rather than frequently updated operational data. Keeping them in the repository provides version history, reviewable changes, and the ability to embed purpose-built React components.
+</ProjectDecision>
+
+<ProjectDecision title="Database metadata for articles" tradeoff="The application must keep the database row and MDX file consistent.">
+  Articles require drafts, categories, subcategories, tags, and administrative filtering. Those relationships fit a relational model better than parsing every file for each request.
+</ProjectDecision>
+
+<ProjectDecision title="Explicit administrator allowlist" tradeoff="New administrators must be added through configuration.">
+  Authentication alone does not imply authorization. Supabase establishes identity, and a server-side email allowlist determines who can access management operations.
+</ProjectDecision>
+
+## What I learned
+
+The most useful architectural boundary was not “database versus files,” but frequency and method of change. Content maintained through Git has different requirements from content maintained through a browser. Treating those as separate workflows made both sides of the platform simpler.
+
+I also learned that an admin dashboard becomes easier to evolve when its API routes, database operations, and public content queries have clear responsibilities rather than sharing UI-specific actions.
+
+## Next steps
+
+- Add automated tests around content validation and authenticated API handlers.
+- Generate social preview images for projects and articles.
+- Add image upload and asset management for article covers.
+- Track useful, privacy-conscious project and article engagement metrics.

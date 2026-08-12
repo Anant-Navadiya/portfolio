@@ -6,6 +6,7 @@ import { getFeaturedProjects } from "@/lib/content/projects";
 import { getAllArticlePosts } from "@/lib/content/articles";
 import Footer from "@/layouts/components/footer";
 import Navbar from "@/layouts/components/navbar";
+import HeroMark from "@/components/site/HeroMark";
 
 export const metadata: Metadata = {
     title: "Anant Navadiya — Full-stack developer and AI student",
@@ -40,6 +41,7 @@ const Page = async () => {
                         <Link href="/articles" className="inline-flex items-center gap-1.5 text-foreground transition-colors hover:text-primary">Articles <span aria-hidden>→</span></Link>
                         {externalLinks.slice(0, 2).map((item) => <a key={item.label} href={item.href} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground">{item.label} <span aria-hidden>↗</span></a>)}
                     </nav>
+                    <div className="mt-10"><HeroMark /></div>
                 </section>
 
                 <section aria-labelledby="selected-work" className="mt-24 sm:mt-32">
@@ -81,9 +83,9 @@ const Page = async () => {
                     </div>
                 </section>
 
-                <section aria-labelledby="away-from-keyboard" className="mt-20 max-w-2xl sm:mt-24">
-                    <h2 id="away-from-keyboard" className="text-sm font-semibold uppercase tracking-[0.14em]">Away from the keyboard</h2>
-                    <p className="mt-5 text-[1.0625rem] leading-8">When I&apos;m not building or learning something new, I&apos;m usually reading, listening to music, or playing games. There&apos;s more to add here, but this is a good place to start.</p>
+                <section aria-labelledby="right-now" className="mt-20 max-w-2xl sm:mt-24">
+                    <h2 id="right-now" className="text-sm font-semibold uppercase tracking-[0.14em]">Right now</h2>
+                    <p className="mt-5 text-[1.0625rem] leading-8">Studying AI in Amberg, building this site in the evenings, and reading more than I&apos;m coding most weeks. <Link href="/now" className="font-medium text-foreground underline decoration-border underline-offset-4 transition-colors hover:decoration-primary">The fuller update →</Link></p>
                 </section>
             </main>
 

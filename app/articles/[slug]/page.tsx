@@ -7,7 +7,7 @@ import ArticleVisual from "@/components/articles/ArticleVisual";
 import ArticleEngagement from "@/components/articles/ArticleEngagement";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/layouts/components/navbar";
-import { getArticleCategories, getArticlePost } from "@/lib/content/articles";
+import { getAllArticlePosts, getArticleCategories, getArticlePost, getRelatedArticlePosts } from "@/lib/content/articles";
 type ArticlePostPageProps = {
     params: Promise<{
         slug: string;
@@ -29,12 +29,13 @@ export const generateMetadata = async ({ params }: ArticlePostPageProps): Promis
 const ArticlePostPage = async ({ params }: ArticlePostPageProps) => {
     await connection();
     const { slug } = await params;
-    const [post, categories] = await Promise.all([getArticlePost(slug), getArticleCategories()]);
+    const [post, categories, allPosts] = await Promise.all([getArticlePost(slug), getArticleCategories(), getAllArticlePosts()]);
     if (!post) {
         notFound();
     }
     const category = categories.find((item) => item.slug === post.category);
     const subcategory = category?.subcategories.find((item) => item.slug === post.subcategory);
+    const relatedPosts = getRelatedArticlePosts(post, allPosts);
     const Content = post.Component;
     return (<>
       <Navbar />
@@ -54,6 +55,8 @@ const ArticlePostPage = async ({ params }: ArticlePostPageProps) => {
                 {new Intl.DateTimeFormat("en", { dateStyle: "long" }).format(new Date(post.date))}
               </time>
               <span>·</span>
+              <span>{post.readingTimeMinutes} min read</span>
+              <span>·</span>
               <ArticleEngagement slug={post.slug} initialViews={post.views} initialUsefulCount={post.usefulCount}/>
             </div>
             {post.tags.length > 0 ? <div className="mt-5 flex flex-wrap gap-2">{post.tags.map((tag) => <span key={tag} className="border bg-muted/40 px-2 py-1 text-xs text-muted-foreground">{tag}</span>)}</div> : null}
@@ -63,7 +66,21 @@ const ArticlePostPage = async ({ params }: ArticlePostPageProps) => {
           <div className="mdx-content">
             <Content />
           </div>
-          <footer className="mt-14 flex flex-wrap items-center justify-between gap-4 border-t pt-6">
+          {relatedPosts.length > 0 ? (
+            <section aria-labelledby="related-articles" className="mt-14 border-t pt-8">
+              <h2 id="related-articles" className="text-sm font-semibold uppercase tracking-[0.14em]">Related notes</h2>
+              <div>
+                {relatedPosts.map((related) => (
+                  <article key={related.slug} className="group border-b py-5 last:border-b-0">
+                    <h3 className="font-semibold tracking-tight"><Link href={`/articles/${related.slug}`} className="transition-colors group-hover:text-primary">{related.title}</Link></h3>
+                    <p className="mt-1.5 text-sm leading-6">{related.description}</p>
+                  </article>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          <footer className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t pt-6">
             <div><p className="text-sm font-medium text-foreground">Continue exploring</p><p className="text-sm">Browse more technical notes and experiments.</p></div>
             <Button asChild variant="outline"><Link href="/articles">All articles</Link></Button>
           </footer>

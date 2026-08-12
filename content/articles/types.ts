@@ -15,6 +15,7 @@ export type ArticlePostMetadata = {
   pinned: boolean;
   views: number;
   usefulCount: number;
+  readingTimeMinutes: number;
 };
 
 export type ArticlePost = ArticlePostMetadata & {

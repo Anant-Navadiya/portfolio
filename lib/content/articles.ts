@@ -19,8 +19,28 @@ export type AdminArticlePost = ArticlePostMetadata & {
     hasContent: boolean;
 };
 const articleSlugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const wordsPerMinute = 200;
 const formatPostDate = (value: Date | null) => {
     return value?.toISOString().slice(0, 10) ?? "";
+};
+const estimateReadingTimeMinutes = async (slug: string): Promise<number> => {
+    if (!articleSlugPattern.test(slug)) {
+        return 1;
+    }
+    try {
+        const raw = await fs.readFile(path.join(process.cwd(), "content/articles/posts", `${slug}.mdx`), "utf8");
+        const text = raw
+            .replace(/^import .*$/gm, " ")
+            .replace(/<[^>]+>/g, " ")
+            .replace(/[{}`*_#>[\]()]/g, " ")
+            .replace(/\s+/g, " ")
+            .trim();
+        const words = text ? text.split(" ").length : 0;
+        return Math.max(1, Math.round(words / wordsPerMinute));
+    }
+    catch {
+        return 1;
+    }
 };
 const loadArticleComponent = async (slug: string): Promise<ComponentType | undefined> => {
     if (!articleSlugPattern.test(slug)) {
@@ -53,7 +73,7 @@ const getTagsByPostSlug = async (slugs: string[]) => {
         return map;
     }, new Map<string, string[]>());
 };
-const toMetadata = (post: typeof articlePosts.$inferSelect, tags: string[], stats?: typeof articlePostStats.$inferSelect | null): ArticlePostMetadata => {
+const toMetadata = (post: typeof articlePosts.$inferSelect, tags: string[], stats: typeof articlePostStats.$inferSelect | null | undefined, readingTimeMinutes: number): ArticlePostMetadata => {
     return {
         title: post.title,
         slug: post.slug,
@@ -65,6 +85,7 @@ const toMetadata = (post: typeof articlePosts.$inferSelect, tags: string[], stat
         pinned: post.pinned,
         views: stats?.views ?? 0,
         usefulCount: stats?.usefulCount ?? 0,
+        readingTimeMinutes,
         image: post.imageUrl
             ? {
                 url: post.imageUrl,
@@ -123,10 +144,11 @@ export const getAllArticlePosts = async (): Promise<ArticlePostMetadata[]> => {
     const rowsWithContent = await Promise.all(rows.map(async (row) => ({
         ...row,
         hasContent: Boolean(await loadArticleComponent(row.post.slug)),
+        readingTimeMinutes: await estimateReadingTimeMinutes(row.post.slug),
     })));
     return rowsWithContent
         .filter(({ hasContent }) => hasContent)
-        .map(({ post, stats }) => toMetadata(post, tagsByPostSlug.get(post.slug) ?? [], stats));
+        .map(({ post, stats, readingTimeMinutes }) => toMetadata(post, tagsByPostSlug.get(post.slug) ?? [], stats, readingTimeMinutes));
 };
 export const getAdminArticlePosts = async (): Promise<AdminArticlePost[]> => {
     if (!db || !hasDatabaseUrl()) {
@@ -145,9 +167,10 @@ export const getAdminArticlePosts = async (): Promise<AdminArticlePost[]> => {
     const rowsWithContent = await Promise.all(rows.map(async (row) => ({
         ...row,
         hasContent: Boolean(await loadArticleComponent(row.post.slug)),
+        readingTimeMinutes: await estimateReadingTimeMinutes(row.post.slug),
     })));
-    return rowsWithContent.map(({ post, stats, hasContent }) => ({
-        ...toMetadata(post, tagsByPostSlug.get(post.slug) ?? [], stats),
+    return rowsWithContent.map(({ post, stats, hasContent, readingTimeMinutes }) => ({
+        ...toMetadata(post, tagsByPostSlug.get(post.slug) ?? [], stats, readingTimeMinutes),
         status: post.status,
         updatedAt: post.updatedAt.toISOString(),
         hasContent,
@@ -167,6 +190,21 @@ export const getAdminPostEditor = async (slug: string) => {
     }
     catch { }
     return { slug: post.slug, title: post.title, description: post.description, status: post.status, categorySlug: post.categorySlug, subcategorySlug: post.subcategorySlug ?? "", publishedAt: formatPostDate(post.publishedAt), imageUrl: post.imageUrl ?? "", imageAlt: post.imageAlt ?? "", tags: tags.join(", "), content, pinned: post.pinned };
+};
+export const getRelatedArticlePosts = (current: ArticlePostMetadata, allPosts: ArticlePostMetadata[], limit = 3): ArticlePostMetadata[] => {
+    const currentTags = new Set(current.tags);
+    return allPosts
+        .filter((post) => post.slug !== current.slug)
+        .map((post) => {
+            const sharedTags = post.tags.filter((tag) => currentTags.has(tag)).length;
+            const sameSubcategory = post.subcategory && post.subcategory === current.subcategory ? 2 : 0;
+            const sameCategory = post.category === current.category ? 1 : 0;
+            return { post, score: sharedTags * 3 + sameSubcategory + sameCategory };
+        })
+        .filter(({ score }) => score > 0)
+        .sort((a, b) => b.score - a.score || (b.post.date > a.post.date ? 1 : -1))
+        .slice(0, limit)
+        .map(({ post }) => post);
 };
 export const getArticlePost = async (slug: string): Promise<ArticlePost | undefined> => {
     if (!db || !hasDatabaseUrl()) {
@@ -190,8 +228,9 @@ export const getArticlePost = async (slug: string): Promise<ArticlePost | undefi
         return undefined;
     }
     const tags = await getTagsByPostSlug([slug]).then((map) => map.get(slug) ?? []);
+    const readingTimeMinutes = await estimateReadingTimeMinutes(slug);
     return {
-        ...toMetadata(row.post, tags, row.stats),
+        ...toMetadata(row.post, tags, row.stats, readingTimeMinutes),
         Component,
     };
 };

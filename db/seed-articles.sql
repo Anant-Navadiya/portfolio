@@ -38,7 +38,7 @@ insert into article_posts (
   (
     'how-llms-work',
     'How LLMs Work',
-    'A plain-language walkthrough of what actually happens between typing a prompt and a large language model typing back an answer — tokens, embeddings, attention, and why they sometimes make things up.',
+    'A plain-language walkthrough of what actually happens between typing a prompt and a large language model typing back an answer: tokens, embeddings, attention, and why they sometimes make things up.',
     'published',
     'ai',
     'models',

@@ -26,7 +26,8 @@ const components: MDXComponents = {
     li: (props) => <li className="pl-1 leading-8" {...props}/>,
     blockquote: (props) => (<blockquote className="my-7 border-l-2 border-primary pl-4 leading-8 text-muted-foreground" {...props}/>),
     code: (props) => (<code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm text-foreground" {...props}/>),
-    pre: (props) => (<pre className="my-7 overflow-x-auto rounded-md border bg-card p-4 text-sm leading-7" {...props}/>),
+    pre: (props) => (<pre className="overflow-x-auto p-4 text-sm leading-7" {...props}/>),
+    figure: (props) => (<figure className="my-7 overflow-hidden rounded-md border bg-card" {...props}/>),
     table: (props) => (<div className="my-6 overflow-x-auto">
       <table className="w-full border-collapse text-sm" {...props}/>
     </div>),

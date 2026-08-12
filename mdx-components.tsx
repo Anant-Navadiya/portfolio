@@ -1,12 +1,20 @@
 import type { MDXComponents } from "mdx/types";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import Callout from "@/components/articles/mdx/Callout";
+import Figure from "@/components/articles/mdx/Figure";
+import TermList from "@/components/articles/mdx/TermList";
+import References from "@/components/articles/mdx/References";
 const Heading = ({ as: Component, className, ...props }: React.HTMLAttributes<HTMLHeadingElement> & {
     as: "h1" | "h2" | "h3" | "h4";
 }) => {
     return <Component className={cn("scroll-m-20 text-balance font-semibold tracking-tight text-foreground", className)} {...props}/>;
 };
 const components: MDXComponents = {
+    Callout,
+    Figure,
+    TermList,
+    References,
     h1: (props) => <Heading as="h1" className="mt-10 text-3xl leading-tight" {...props}/>,
     h2: (props) => <Heading as="h2" className="mt-12 border-t pt-8 text-2xl leading-tight" {...props}/>,
     h3: (props) => <Heading as="h3" className="mt-9 text-xl leading-snug" {...props}/>,

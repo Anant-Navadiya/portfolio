@@ -1,1 +1,94 @@
-# Basic Introduction
+import NestedFieldsDiagram from "@/components/articles/diagrams/NestedFieldsDiagram";
+import RuleBasedVsLearnedDiagram from "@/components/articles/diagrams/RuleBasedVsLearnedDiagram";
+
+# What Is AI?
+
+My phone finished a sentence for me the other day before I'd typed the second word. My playlist app started a song that fit my mood better than the one I would've picked myself. Neither of those things was thinking. Both looked like it.
+
+That gap, between "looks like it's thinking" and "is actually thinking," is basically the whole story of AI. It's worth understanding properly instead of picking it up in fragments from headlines, because once you see the mechanism, a lot of the mystery (and a lot of the hype) falls away.
+
+## The short version
+
+If you only take one sentence from this article, take this one: **AI is software that makes decisions by finding patterns in examples, instead of following rules a person typed out by hand.**
+
+Not consciousness, not magic, not a digital brain. It's a different way of writing software: instead of telling the computer exactly what to do, you show it a lot of examples and let it work out the pattern on its own.
+
+To see why that distinction matters, it helps to compare the two approaches side by side.
+
+<Figure label="Comparison" caption="Older software follows instructions exactly. Machine learning finds its own rules from examples, then applies them to things it hasn't seen before.">
+  <RuleBasedVsLearnedDiagram />
+</Figure>
+
+A classic example is spam filtering. The old-school version was a big list of hand-written rules: if the email contains "viagra" or has five exclamation marks in the subject line, mark it as spam. It worked, until spammers figured out the rules and started spelling things "v1agra" instead.
+
+A learned spam filter doesn't get any rules. It gets shown thousands of emails that people already labeled as spam or not-spam, and it works out on its own which patterns (word combinations, sender behavior, formatting) tend to show up in spam. Nobody wrote "flag the word v1agra." The system noticed the pattern itself, from data, the same way it would notice any other pattern nobody thought to write a rule for.
+
+## AI is a stack, not one thing
+
+"AI," "machine learning," and "LLM" get used interchangeably a lot, but they're not the same thing. They're nested: each one is a specific way of doing the one above it.
+
+<Figure label="Terminology" caption="Artificial intelligence is the broad goal. Machine learning is one way to reach it. Deep learning is one way to do machine learning. LLMs are a specific kind of deep learning model, trained specifically on language.">
+  <NestedFieldsDiagram />
+</Figure>
+
+Think of it the way you'd think about vehicles: a car is a kind of vehicle, an electric car is a kind of car, and a specific model like a Model 3 is a kind of electric car. Each label gets more specific as you move inward, and something in the smallest circle is automatically also true of every circle around it.
+
+<TermList terms={[
+    { term: "Artificial intelligence", definition: "The broad goal: software that makes decisions or judgment calls a human would normally make." },
+    { term: "Machine learning", definition: "One way to build AI: instead of writing rules, you show the system examples and it learns the pattern." },
+    { term: "Deep learning", definition: "A specific machine learning technique that uses many stacked layers of small, simple calculations (a 'neural network') to learn more complex patterns." },
+    { term: "LLM", definition: "Large language model: a deep learning model trained on huge amounts of text, specifically to predict what word comes next. This is what powers tools like ChatGPT, Claude, and Gemini." },
+]} />
+
+Not every AI system is a deep learning system, and not every deep learning system is a language model. But every LLM is a deep learning model, and every deep learning model is a machine learning model. The circles only get more specific as you go in.
+
+## How a machine actually "learns" something
+
+The word "training" gets thrown around a lot, and it sounds more mystical than it is. Here's roughly what happens.
+
+Say you want a model to guess the price of a house from its size. You start with a formula that has a few adjustable numbers in it (call them knobs) set to random values at first. You feed it a house with a known size and a known price. The model makes a guess. You compare the guess to the real price and see how wrong it was. Then you nudge the knobs slightly in the direction that would have made the guess a bit less wrong.
+
+Do that a few million times, across a few million houses, and the knobs settle into values that make reasonably good guesses on houses the model has never seen. That's training: guess, measure the mistake, adjust slightly, repeat. It happens at a scale that's hard to picture, but it isn't a different process in kind from what I just described.
+
+<Callout variant="tip" title="Worth knowing">
+When someone says "the model was trained on X," they mean exactly this: X is the pile of examples it saw while its internal knobs were being adjusted. A model that was never shown medical text, for instance, has no special medical knowledge. It just picked up whatever patterns were sitting in whatever it was shown.
+</Callout>
+
+## What AI is not
+
+Once you see the mechanism, a few things become easier to spot:
+
+- It doesn't understand things the way a person does. It's finding statistical patterns in data, full stop.
+- "AI" isn't one algorithm. The label covers a wide range of techniques, from a simple spam filter to a model with hundreds of billions of adjustable numbers.
+- It isn't infallible. A model trained on biased or incomplete examples will confidently reproduce that bias, because it has no way of knowing the difference between a real pattern and one that happens to be wrong.
+
+<Callout variant="myth">
+"The AI thinks X" is a convenient shorthand, but it's worth translating in your head to what's actually happening: the model calculated that X was the statistically most likely output, given the patterns in what it was trained on. There's no belief underneath it, just a very well-tuned guess.
+</Callout>
+
+## Where you're already using it
+
+None of this is as futuristic as it sounds. You've probably used AI today without thinking about it:
+
+- Your keyboard's predictive text and autocorrect
+- Spam and phishing filters in your inbox
+- The playlist or "recommended for you" row on Spotify, YouTube, or Netflix
+- Face unlock on your phone
+- Voice assistants parsing what you just said
+- Your bank flagging an unusual card transaction
+- Traffic and ETA predictions in maps apps
+
+All of it is the same underlying idea from earlier in this article, applied to a different kind of data: learn the pattern from examples, then apply it to something new.
+
+## Where this leaves us
+
+The part everyone's actually talking about right now (ChatGPT, Claude, Gemini, and the rest) sits in the smallest circle from the diagram above: LLMs. They're a specific, and specifically interesting, case of everything covered here, because instead of learning patterns in house prices or emails, they learn patterns in language itself.
+
+That's different enough, and important enough, that it gets its own article: [How LLMs Work](/articles/how-llms-work) walks through what's actually happening between you typing a prompt and the model typing back an answer.
+
+<References items={[
+    { title: "Artificial intelligence", source: "Wikipedia", href: "https://en.wikipedia.org/wiki/Artificial_intelligence" },
+    { title: "What is artificial intelligence (AI)?", source: "IBM", href: "https://www.ibm.com/think/topics/artificial-intelligence" },
+    { title: "Large language model", source: "Wikipedia", href: "https://en.wikipedia.org/wiki/Large_language_model" },
+    { title: "How LLMs Work", source: "Continue reading on this site", href: "/articles/how-llms-work", internal: true },
+]} />

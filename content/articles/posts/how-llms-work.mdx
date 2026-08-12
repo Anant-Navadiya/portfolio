@@ -1,0 +1,91 @@
+import TokenPipelineDiagram from "@/components/articles/diagrams/TokenPipelineDiagram";
+import NextTokenProbabilityDiagram from "@/components/articles/diagrams/NextTokenProbabilityDiagram";
+
+# How LLMs Work
+
+Ask an LLM what two plus two is, and it says four. Ask it something obscure (something it never saw a clear answer to during training) and it will often answer just as confidently. And just as wrong.
+
+That confidence isn't a bug that a future update will quietly patch out. It's baked into how these models work at a mechanical level. Once you see the mechanism, the behavior stops being mysterious and starts being predictable, which is a much more useful place to be, whether you're using these tools daily or just trying to have an informed opinion about them.
+
+If you haven't read [What Is AI?](/articles/introduction-of-ai) yet, it's worth a quick detour first, since this article picks up right where that one leaves off.
+
+## The one trick underneath everything
+
+Strip away the layers, and a large language model does one thing: given the text so far, it predicts what comes next, one small chunk at a time. That's the entire job. Everything else (the training, the size, the architecture) exists to make that one prediction as good as it can possibly be.
+
+<Figure label="The loop" caption="An LLM doesn't write your whole answer at once. It predicts one token, appends it to the text, and runs the whole process again on the slightly longer text, over and over, until it decides to stop.">
+  <TokenPipelineDiagram />
+</Figure>
+
+It really is that repetitive. There's no step where the model "plans out" the whole reply in advance. It's guessing the very next piece, adding that guess to the conversation, and then guessing again: autocomplete on your phone, run thousands of times in a row, with a much, much better sense of what should come next.
+
+## Step 1: Text gets cut into tokens
+
+The model doesn't see words the way you do. Text first gets chopped into pieces called tokens, which are often smaller than a full word. A long word like "unbelievable" might become something like `un`, `believ`, `able`. Common short words usually stay whole.
+
+Why bother? Splitting into these smaller reusable pieces lets the model handle words it's never seen before (typos, made-up words, names) by combining familiar fragments, instead of needing a rule for every possible word in every language.
+
+## Step 2: Tokens become numbers
+
+Computers don't do math on words, so each token gets converted into a long list of numbers, a vector. This isn't random: the training process arranges these numbers so tokens used in similar situations end up with similar numbers. "Cat" and "dog" end up closer to each other in this number-space than "cat" and "spreadsheet," because they tend to show up in similar kinds of sentences.
+
+This is the part that lets the model deal in something like meaning, without anyone ever explicitly telling it what a cat is.
+
+## Step 3: Attention decides what actually matters
+
+This is the part that made modern LLMs possible. When predicting the next token, the model doesn't treat every earlier word equally. It learns to weigh which earlier words are relevant right now, and mostly ignore the ones that aren't.
+
+Picture reading a mystery novel and guessing who the culprit is. You don't weigh every sentence in the book equally. The odd detail from chapter two about someone's muddy boots matters a lot more than the throwaway line about the weather. Attention is the mechanism that lets the model do the same thing: look back across everything said so far and decide, for this specific next guess, what actually deserves weight.
+
+<Callout variant="note" title="If you want the actual math">
+I wrote up the literal attention equation, with the matrix shapes, in a separate note: [Scaled Dot-Product Attention](/articles/attention-mechanism). This article deliberately stays at the intuition level. That one doesn't.
+</Callout>
+
+## Step 4: Turning a guess into an actual choice
+
+After all that, the model doesn't spit out one word. It spits out a probability for every possible next token, tens of thousands of candidates, each with a percentage attached. Then it samples one, usually favoring the higher-probability options without always picking the single top one.
+
+<Figure label="Example" caption="A simplified look at what the model's output actually is: not one answer, but a ranked list of plausible next words with a percentage attached to each.">
+  <NextTokenProbabilityDiagram />
+</Figure>
+
+That's a real mechanical detail worth sitting with: the model was never choosing "the correct next word." It was choosing the statistically most plausible one, given everything it saw during training. Most of the time those two things line up. Sometimes they don't.
+
+## Where "training" actually comes in
+
+All of the number-tuning described in the last article happens here, at enormous scale. The model is shown a huge pile of text (books, articles, code, forums) and, over and over, asked to predict the next token in a sentence it's already seen the answer to. Every time it's wrong, its internal numbers get nudged very slightly in a better direction. Modern models have on the order of hundreds of billions of these adjustable numbers, and this guess-check-adjust loop runs an almost incomprehensible number of times before the model is considered "trained."
+
+After that base training, most models go through an extra round where humans rank different possible answers and the model gets further nudged toward the ones people preferred. This is roughly what people mean by "fine-tuning" or RLHF. It's the same mechanism, just aimed at "be a helpful assistant" instead of "predict the next word in a random web page."
+
+## Why LLMs sometimes just make things up
+
+This is where the opening example comes back around. The model was never taught to distinguish "I actually know this" from "this sounds like the kind of thing that's usually true." Both come out of the exact same mechanism: predict the most statistically plausible next token. When the model has seen the real answer many times in training, that mechanism produces the real answer. When it hasn't, the mechanism still runs, and produces something fluent, confident, and sometimes completely made up. That's what people mean by "hallucination."
+
+<Callout variant="myth">
+"It's lying" implies the model knows the truth and is choosing to say something else. That's not what's happening. It has no internal fact-checker comparing its answer against reality. It's generating the next plausible token either way, and fluent, confident-sounding text is what that process always produces, whether or not it happens to be correct.
+</Callout>
+
+## A few practical takeaways
+
+Knowing the mechanism changes how you'd actually want to use one of these tools:
+
+- Double-check anything factual, numeric, or high-stakes: the model has no built-in way to tell you when it's guessing.
+- It tends to be more reliable on things that show up constantly in its training data (common knowledge, popular code patterns) than on obscure or very recent facts.
+- More context in your prompt gives the attention mechanism more relevant material to weigh, which usually means a better next-token guess.
+
+<TermList terms={[
+    { term: "Token", definition: "A chunk of text (often smaller than a full word) that the model treats as one unit." },
+    { term: "Embedding", definition: "The list of numbers a token gets converted into, arranged so similar tokens end up with similar numbers." },
+    { term: "Attention", definition: "The mechanism that lets the model weigh which earlier tokens matter most for predicting the next one." },
+    { term: "Transformer", definition: "The neural network design, built around attention, that current LLMs are based on." },
+    { term: "Parameter", definition: "One of the model's internal adjustable numbers. Modern LLMs have hundreds of billions of them." },
+    { term: "Hallucination", definition: "Fluent, confident text that is factually wrong: the natural result of predicting plausible text with no fact-checking step." },
+]} />
+
+<References items={[
+    { title: "Attention Is All You Need", source: "Vaswani et al., 2017, the paper that introduced the transformer", href: "https://arxiv.org/abs/1706.03762" },
+    { title: "The Illustrated Transformer", source: "Jay Alammar, the best visual walkthrough of this mechanism", href: "https://jalammar.github.io/illustrated-transformer/" },
+    { title: "What are large language models (LLMs)?", source: "IBM", href: "https://www.ibm.com/think/topics/large-language-models" },
+    { title: "Scaled Dot-Product Attention", source: "The math version of the attention section above, on this site", href: "/articles/attention-mechanism", internal: true },
+    { title: "What Is AI?", source: "Start here if you haven't already", href: "/articles/introduction-of-ai", internal: true },
+]} />

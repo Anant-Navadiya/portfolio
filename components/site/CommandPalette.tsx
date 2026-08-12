@@ -17,11 +17,22 @@ const CommandPalette = () => {
     const [activeIndex, setActiveIndex] = useState(0);
     const inputRef = useRef<HTMLInputElement>(null);
 
+    const openPalette = () => {
+        setQuery("");
+        setActiveIndex(0);
+        setOpen(true);
+    };
+
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
                 event.preventDefault();
-                setOpen((value) => !value);
+                setOpen((wasOpen) => {
+                    if (wasOpen) return false;
+                    setQuery("");
+                    setActiveIndex(0);
+                    return true;
+                });
             }
         };
         window.addEventListener("keydown", handleKeyDown);
@@ -37,12 +48,9 @@ const CommandPalette = () => {
     }, [open, entries]);
 
     useEffect(() => {
-        if (open) {
-            setQuery("");
-            setActiveIndex(0);
-            const timeout = window.setTimeout(() => inputRef.current?.focus(), 0);
-            return () => window.clearTimeout(timeout);
-        }
+        if (!open) return;
+        const timeout = window.setTimeout(() => inputRef.current?.focus(), 0);
+        return () => window.clearTimeout(timeout);
     }, [open]);
 
     const filtered = useMemo(() => {
@@ -52,15 +60,20 @@ const CommandPalette = () => {
         return entries.filter((entry) => `${entry.title} ${entry.description}`.toLowerCase().includes(normalized));
     }, [entries, query]);
 
+    const flatIndexByHref = useMemo(() => new Map(filtered.map((entry, index) => [entry.href, index])), [filtered]);
+
     const grouped = useMemo(() => groupOrder
         .map((group) => ({ group, items: filtered.filter((entry) => entry.group === group) }))
         .filter(({ items }) => items.length > 0), [filtered]);
 
-    useEffect(() => setActiveIndex(0), [query]);
-
     const navigate = (href: string) => {
         setOpen(false);
         router.push(href);
+    };
+
+    const handleQueryChange = (value: string) => {
+        setQuery(value);
+        setActiveIndex(0);
     };
 
     const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -79,11 +92,9 @@ const CommandPalette = () => {
         }
     };
 
-    let flatIndex = -1;
-
     return (
         <>
-            <button type="button" onClick={() => setOpen(true)} className="inline-flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground">
+            <button type="button" onClick={openPalette} className="inline-flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground">
                 <span className="icon-[lucide--search] size-3.5" aria-hidden="true" />
                 <span className="hidden sm:inline">Search</span>
                 <kbd className="hidden rounded border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline">⌘K</kbd>
@@ -97,7 +108,7 @@ const CommandPalette = () => {
                         <input
                             ref={inputRef}
                             value={query}
-                            onChange={(event) => setQuery(event.target.value)}
+                            onChange={(event) => handleQueryChange(event.target.value)}
                             onKeyDown={handleInputKeyDown}
                             placeholder="Search articles, projects, and pages…"
                             className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
@@ -110,14 +121,14 @@ const CommandPalette = () => {
                             <div key={group} className="px-2 py-1.5">
                                 <p className="px-2 py-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{group}</p>
                                 {items.map((entry) => {
-                                    flatIndex += 1;
-                                    const isActive = flatIndex === activeIndex;
+                                    const entryIndex = flatIndexByHref.get(entry.href) ?? -1;
+                                    const isActive = entryIndex === activeIndex;
                                     return (
                                         <button
                                             key={entry.href}
                                             type="button"
                                             onClick={() => navigate(entry.href)}
-                                            onMouseEnter={() => setActiveIndex(flatIndex)}
+                                            onMouseEnter={() => setActiveIndex(entryIndex)}
                                             className={cn("flex w-full flex-col items-start gap-0.5 px-2 py-2 text-left transition-colors", isActive ? "bg-accent text-accent-foreground" : "text-foreground")}
                                         >
                                             <span className="text-sm font-medium">{entry.title}</span>

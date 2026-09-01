@@ -13,6 +13,19 @@ export const projects = [
         duration: "Ongoing",
         technologies: ["Next.js", "TypeScript", "PostgreSQL", "Drizzle ORM", "Supabase", "Tailwind CSS"],
     },
+    {
+        slug: "transpilex",
+        title: "Transpilex",
+        summary: "A python cli transpiler tool to convert html pages into the various frameworks.",
+        outcome: "A converter tool that saves time drastically, and reduced workload",
+        year: 2025,
+        status: "completed",
+        category: "tool",
+        featured: true,
+        role: "Designer and Developer",
+        duration: "Few Weeks",
+        technologies: ["Python", "Cookie Cutter"],
+    },
 ] satisfies ProjectMetadata[];
 export const getProjectMetadata = (slug: string) => {
     return projects.find((project) => project.slug === slug);

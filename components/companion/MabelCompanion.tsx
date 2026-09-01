@@ -245,8 +245,14 @@ const MabelCompanion = () => {
         window.localStorage.setItem(storageKeys.skin, next);
         window.dispatchEvent(new Event(skinEvent));
         setSkinMenuOpen(false);
-        setLocalMood("excited");
+        setLocalMood("love");
         setLocalAction("celebrate");
+    };
+
+    const toggleSkinMenu = () => {
+        const next = !skinMenuOpen;
+        setSkinMenuOpen(next);
+        if (next) setLocalMood("starstruck");
     };
 
     const speakAnswer = () => {
@@ -314,7 +320,7 @@ const MabelCompanion = () => {
                             <span className="text-[10px] text-muted-foreground">Anant&apos;s companion</span>
                         </div>
                         <div className="flex items-center rounded-full border bg-background/75 p-1 shadow-sm backdrop-blur">
-                            <Button type="button" variant="ghost" size="icon-sm" className="rounded-full" aria-label="Choose Mabel's outfit" onClick={() => setSkinMenuOpen((value) => !value)}><span className="icon-[lucide--shirt] size-3.5" /></Button>
+                            <Button type="button" variant="ghost" size="icon-sm" className="rounded-full" aria-label="Choose Mabel's outfit" onClick={toggleSkinMenu}><span className="icon-[lucide--shirt] size-3.5" /></Button>
                             <Button type="button" variant="ghost" size="icon-sm" className="rounded-full" aria-label="Close Mabel" onClick={() => setOpen(false)}><span className="icon-[lucide--x] size-4" /></Button>
                         </div>
                     </header>

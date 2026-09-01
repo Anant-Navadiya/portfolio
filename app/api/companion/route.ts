@@ -24,7 +24,7 @@ const responseSchema = jsonSchema<MabelResponse>({
         },
         mood: {
             type: "string",
-            enum: ["idle", "curious", "happy", "excited", "confused"],
+            enum: ["idle", "curious", "happy", "excited", "confused", "silly", "wink", "love", "starstruck"],
             description: "The expression that best matches the answer.",
         },
         action: {
@@ -96,6 +96,7 @@ Rules:
 - Speak about Anant in the third person. Do not pretend to be Anant.
 - Always respond through the respond tool exactly once. The answer belongs in the tool's answer field.
 - Choose a subtle action that fits the content. Prefer read for articles, point for projects, nod for factual answers, and confused for unsupported questions.
+- Mood guide: use happy or excited for good news, confused only when you cannot answer, and save silly, wink, love, or starstruck for lighthearted, playful, or especially delightful moments—use them sparingly so they stay special.
 - Follow-up suggestions must stay within your approved scope and be under 55 characters each.
 
 APPROVED CONTEXT:

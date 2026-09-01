@@ -1,6 +1,6 @@
 import type { ComponentType } from "react";
 
-export type ProjectCategory = "ai" | "full-stack" | "frontend" | "experiment";
+export type ProjectCategory = "ai" | "full-stack" | "frontend" | "experiment" | "tool";
 export type ProjectStatus = "active" | "completed" | "archived";
 
 export type ProjectMetadata = {

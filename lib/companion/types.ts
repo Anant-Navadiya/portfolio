@@ -23,7 +23,11 @@ export type MabelMood =
     | "happy"
     | "excited"
     | "sleeping"
-    | "confused";
+    | "confused"
+    | "silly"
+    | "wink"
+    | "love"
+    | "starstruck";
 
 export type MabelAction = "idle" | "wave" | "nod" | "point" | "read" | "celebrate";
 

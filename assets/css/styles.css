@@ -283,6 +283,18 @@ html {
     50% { transform: scaleX(1.04) scaleY(0.97); }
 }
 
+@keyframes mabel-wobble {
+    0%, 100% { transform: rotate(-4deg); }
+    25% { transform: rotate(6deg); }
+    50% { transform: rotate(-6deg); }
+    75% { transform: rotate(4deg); }
+}
+
+@keyframes mabel-love-bob {
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50% { transform: translateY(-5px) rotate(2deg); }
+}
+
 .mabel-avatar {
     --mabel-fur: #d97706;
     --mabel-face: #fed7aa;
@@ -576,6 +588,83 @@ html {
 
 .mabel-mood-sleeping .mabel-sleep {
     opacity: 0.75;
+}
+
+.mabel-mood-silly .mabel-head {
+    animation: mabel-wobble 1.6s ease-in-out infinite;
+}
+
+.mabel-mood-silly .mabel-eye-left {
+    transform: scaleY(0.5) translateY(2px);
+}
+
+.mabel-mood-silly .mabel-eye-right {
+    transform: scale(1.15);
+}
+
+.mabel-mood-silly .mabel-pupil-left {
+    transform: translate(1px, 3px);
+}
+
+.mabel-mood-silly .mabel-mouth {
+    transform: rotate(-8deg) scaleX(1.15) translate(-2px, 2px);
+}
+
+.mabel-mood-wink .mabel-eye-right,
+.mabel-mood-wink .mabel-pupil-right {
+    animation: none;
+    transform: scaleY(0.08);
+}
+
+.mabel-mood-wink .mabel-eye-left {
+    transform: scaleY(0.85);
+}
+
+.mabel-mood-wink .mabel-mouth {
+    transform: translate(3px, -1px) rotate(-6deg) scaleX(1.1);
+}
+
+.mabel-mood-wink .mabel-head {
+    transform: rotate(4deg);
+}
+
+.mabel-mood-love .mabel-head {
+    animation: mabel-love-bob 0.85s ease-in-out infinite;
+}
+
+.mabel-mood-love .mabel-eye {
+    transform: scaleY(0.55);
+}
+
+.mabel-mood-love .mabel-mouth {
+    stroke-width: 4;
+    transform: scaleX(1.1) translateY(1px);
+}
+
+.mabel-mood-love .mabel-sparkles {
+    opacity: 1;
+    animation: mabel-sparkle 0.9s ease-in-out infinite;
+    transform-origin: center;
+    filter: hue-rotate(300deg) saturate(1.4);
+}
+
+.mabel-mood-starstruck .mabel-eye {
+    transform: scale(1.25);
+}
+
+.mabel-mood-starstruck .mabel-pupil {
+    transform: scale(0.6);
+    filter: drop-shadow(0 0 3px var(--mabel-accent));
+}
+
+.mabel-mood-starstruck .mabel-sparkles {
+    opacity: 1;
+    animation: mabel-sparkle 0.7s ease-in-out infinite;
+    transform-origin: center;
+}
+
+.mabel-mood-starstruck .mabel-head {
+    transform: translateY(-3px);
 }
 
 .mabel-action-wave .mabel-arm-left {

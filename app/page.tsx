@@ -6,7 +6,6 @@ import { getFeaturedProjects } from "@/lib/content/projects";
 import { getAllArticlePosts } from "@/lib/content/articles";
 import Footer from "@/layouts/components/footer";
 import Navbar from "@/layouts/components/navbar";
-import HeroMark from "@/components/site/HeroMark";
 
 export const metadata: Metadata = {
     title: "Anant Navadiya — Full-stack developer and AI student",
@@ -41,7 +40,6 @@ const Page = async () => {
                         <Link href="/articles" className="inline-flex items-center gap-1.5 text-foreground transition-colors hover:text-primary">Articles <span aria-hidden>→</span></Link>
                         {externalLinks.slice(0, 2).map((item) => <a key={item.label} href={item.href} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground">{item.label} <span aria-hidden>↗</span></a>)}
                     </nav>
-                    <div className="mt-10"><HeroMark /></div>
                 </section>
 
                 <section aria-labelledby="selected-work" className="mt-24 sm:mt-32">

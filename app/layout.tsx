@@ -6,9 +6,9 @@ import { siteUrl } from "@/lib/site";
 import { ThemeProvider } from 'next-themes';
 import { TooltipProvider } from "@/components/ui/tooltip";
 import PublicSiteWidgets from "@/components/site/PublicSiteWidgets";
-import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import { GeistPixelSquare, GeistPixelGrid, GeistPixelCircle, GeistPixelTriangle, GeistPixelLine } from 'geist/font/pixel';
+
 export const metadata: Metadata = {
     metadataBase: new URL(siteUrl),
     title: "Anant Navadiya",
@@ -20,14 +20,21 @@ export const metadata: Metadata = {
 const RootLayout = ({ children, }: Readonly<{
     children: React.ReactNode;
 }>) => {
-    return (<html lang="en" className={cn("h-full", "antialiased", GeistSans.variable, GeistMono.variable, GeistPixelSquare.variable, GeistPixelGrid.variable, GeistPixelCircle.variable, GeistPixelTriangle.variable, GeistPixelLine.variable)} suppressHydrationWarning>
-      <body className="mx-auto max-w-3xl px-5 sm:px-6">
-          <ThemeProvider>
-            <TooltipProvider>
-             {children}
-             <PublicSiteWidgets />
-            </TooltipProvider>
-          </ThemeProvider>
+    return (<html lang="en" className={cn("h-full", "antialiased", GeistMono.variable, GeistPixelSquare.variable, GeistPixelGrid.variable, GeistPixelCircle.variable, GeistPixelTriangle.variable, GeistPixelLine.variable)} suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://api.fontshare.com/" />
+        <link rel="preconnect" href="https://cdn.fontshare.com/" />
+        <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap" />
+      </head>
+      <body>
+          <div className="mx-auto max-w-3xl px-5 sm:px-6">
+            <ThemeProvider>
+              <TooltipProvider>
+               {children}
+               <PublicSiteWidgets />
+              </TooltipProvider>
+            </ThemeProvider>
+          </div>
       </body>
     </html>);
 };

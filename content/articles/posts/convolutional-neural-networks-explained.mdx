@@ -1,0 +1,39 @@
+# Convolutional Neural Networks, Explained
+
+A fully-connected layer treats every pixel as an independent feature with its own weight — for a modest 224×224 color image, that's over 150,000 inputs before the network has learned anything about what an image *is*. Convolutional neural networks (CNNs) build in a better prior: nearby pixels are related, and the same pattern (an edge, a curve, a texture) can appear anywhere in the frame.
+
+## The Convolution Operation
+
+A convolutional layer slides a small filter — say, 3×3 — across the image, computing a dot product at each position:
+
+$$
+(I * K)(i, j) = \sum_{m} \sum_{n} I(i+m, j+n) \, K(m, n)
+$$
+
+$I$ is the image, $K$ is the filter, and the result is a feature map: high values where the patch under the filter resembles the pattern the filter has learned to detect. Because the same filter is reused at every position, a CNN needs far fewer parameters than a fully-connected layer covering the same image — and a filter that learns to detect a vertical edge works whether that edge appears top-left or bottom-right.
+
+## Stacking Layers: From Edges to Objects
+
+| Layer depth | What filters tend to detect |
+| ----------- | ---------------------------- |
+| Early (layer 1-2) | Edges, colors, simple gradients |
+| Middle | Textures, corners, simple shapes |
+| Late | Object parts (eyes, wheels), whole objects |
+
+Each layer's output becomes the next layer's input, so filters compose: a middle layer's "wheel-like circle" detector is built from early layers' edge and curve detectors. This hierarchy is why CNNs generalize well to new images — they're recognizing structure, not memorizing pixels.
+
+## Pooling: Discarding Position, Keeping Presence
+
+After convolution, a pooling layer (usually max pooling) shrinks each feature map by keeping only the strongest response in each small region:
+
+```python
+def max_pool_2x2(feature_map):
+    h, w = feature_map.shape
+    return feature_map.reshape(h // 2, 2, w // 2, 2).max(axis=(1, 3))
+```
+
+This does two things: it reduces computation for later layers, and it makes the network somewhat tolerant to small translations — if an edge shifts by a pixel or two, the pooled output usually doesn't change.
+
+## Receptive Field
+
+A single neuron deep in the network doesn't see the whole image directly — it sees a small patch, whose size (its *receptive field*) grows with depth as layers compose. Stacking 3×3 convolutions is a deliberate design choice: two stacked 3×3 layers cover the same receptive field as one 5×5 layer, with fewer parameters and an extra nonlinearity in between, which is part of why architectures like VGG and ResNet standardized on small filters stacked deep rather than a few large ones.

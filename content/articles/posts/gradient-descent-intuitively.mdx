@@ -1,0 +1,39 @@
+# Gradient Descent, Intuitively
+
+Almost every model you train — linear regression, a CNN, a transformer — learns the same way: it nudges its parameters a little at a time to make its predictions less wrong. That nudging process is gradient descent.
+
+## The Loss Landscape
+
+Picture every possible setting of a model's parameters as a point on a landscape, and the model's error at that point as the landscape's height. Training is walking downhill until you reach a valley — a set of parameters where the error is low.
+
+$$
+\theta_{t+1} = \theta_t - \eta \nabla_\theta \mathcal{L}(\theta_t)
+$$
+
+Here $\theta$ is the parameter vector, $\mathcal{L}$ is the loss function, $\nabla_\theta \mathcal{L}$ is the gradient (the direction of steepest ascent), and $\eta$ is the learning rate. Subtracting the gradient moves you downhill; the learning rate controls the size of each step.
+
+## Why the Learning Rate Matters
+
+| Learning rate | What happens |
+| ------------- | ------------- |
+| Too small | Training crawls; may get stuck in a shallow dip long before it matters |
+| Too large | Steps overshoot the valley and the loss oscillates or diverges |
+| Well-tuned | Steady, fast descent toward a good minimum |
+
+In practice, the rate is rarely constant. Schedulers shrink it over time, and adaptive optimizers like Adam rescale it per-parameter based on the recent history of gradients.
+
+## Batches: Full, Stochastic, and Mini
+
+Computing the exact gradient requires averaging the loss over the entire dataset, which is expensive. Stochastic gradient descent (SGD) estimates it from a single example instead — noisy, but cheap. Mini-batch gradient descent splits the difference, averaging over a small batch (say, 32 or 256 examples) at each step. That noise is not purely a nuisance: it helps the optimizer escape shallow local minima and saddle points that a perfectly smooth gradient would settle into.
+
+## A Minimal Implementation
+
+```python
+def gradient_descent(grad_fn, theta, lr=0.01, steps=1000):
+    for _ in range(steps):
+        grad = grad_fn(theta)
+        theta = theta - lr * grad
+    return theta
+```
+
+`grad_fn` computes $\nabla_\theta \mathcal{L}$ at the current parameters — for a neural network, this is exactly what backpropagation produces. Everything else in modern deep learning optimizers (momentum, Adam, weight decay) is a refinement of this same loop: look at the slope, take a step, repeat.

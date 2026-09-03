@@ -1,0 +1,54 @@
+# Transformers vs. RNNs
+
+Before transformers, sequence models like RNNs and LSTMs were the default way to process text. Understanding why they were replaced — and what they actually did well — clarifies why the transformer architecture looks the way it does.
+
+## RNNs: Sequential by Construction
+
+A recurrent neural network processes a sequence one token at a time, carrying a hidden state forward:
+
+$$
+h_t = f(h_{t-1}, x_t)
+$$
+
+Each hidden state $h_t$ is a compressed summary of everything seen so far. This is elegant and memory-efficient, but it creates two hard problems:
+
+| Problem | Why it happens |
+| ------- | --------------- |
+| Vanishing/exploding gradients | Backpropagating through many time steps repeatedly multiplies by the same weight matrix |
+| No parallelism across time | $h_t$ can't be computed until $h_{t-1}$ exists, so training can't parallelize over sequence length |
+
+LSTMs and GRUs mitigated the gradient problem with gating mechanisms, but the sequential bottleneck remained — training on long documents was slow simply because the computation couldn't be parallelized across the time dimension.
+
+## Self-Attention: Parallel by Construction
+
+Transformers replace recurrence with self-attention: every token looks directly at every other token in a single step, rather than through a chain of hidden states.
+
+$$
+\operatorname{Attention}(Q, K, V) = \operatorname{softmax}\left(\frac{QK^\top}{\sqrt{d_k}}\right)V
+$$
+
+Because this computation has no dependency on a previous time step, every token's representation can be computed simultaneously on a GPU. That's the single biggest practical reason transformers overtook RNNs: given the same hardware, they use it far more efficiently.
+
+## The Tradeoff: Compute vs. Memory
+
+| | RNN | Transformer |
+| - | --- | ----------- |
+| Per-step compute | $O(1)$ per token | $O(n)$ per token (attends to all $n$ tokens) |
+| Total compute for length $n$ | $O(n)$ | $O(n^2)$ |
+| Parallelizable across sequence | No | Yes |
+| Long-range dependencies | Degrade with distance | Direct, constant-distance access |
+
+Self-attention's $O(n^2)$ cost is the price paid for direct access to every token — an RNN has to route information for a long-range dependency through every intermediate hidden state, while a transformer connects any two tokens with a single attention weight. That quadratic cost is also why long-context transformers need techniques like sparse attention or sliding windows: the direct-access advantage becomes expensive at very large $n$.
+
+## Why This Mattered in Practice
+
+```python
+# RNN: must process sequentially
+for t in range(seq_len):
+    h[t] = rnn_cell(h[t-1], x[t])
+
+# Transformer: all positions computed in one batched operation
+attention_output = self_attention(Q, K, V)  # shape: (seq_len, d_model)
+```
+
+The RNN loop is inherently serial in Python and on hardware alike. The transformer's attention call is a handful of matrix multiplications over the whole sequence at once — exactly the kind of operation GPUs are built to accelerate. Given that training LLMs is bottlenecked by how much data can be processed on available hardware, that parallelism, more than any single accuracy improvement, is why transformers became the default architecture for language modeling.

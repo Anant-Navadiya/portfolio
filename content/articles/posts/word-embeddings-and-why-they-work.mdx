@@ -1,0 +1,47 @@
+# Word Embeddings and Why They Work
+
+Before a model can do anything with language, it needs to turn words into numbers. The naive approach — assign each word an arbitrary integer ID — throws away everything interesting: it treats "cat" and "dog" as no more related than "cat" and "spreadsheet." Word embeddings fix this by placing every word at a point in a continuous vector space, positioned so that meaning becomes geometry.
+
+## The Distributional Hypothesis
+
+The core idea behind word embeddings predates deep learning: *a word is characterized by the company it keeps*. Words that show up in similar contexts — "coffee" and "tea," "king" and "queen" — end up with similar vectors, because the training objective is literally to predict a word from its neighbors (or its neighbors from the word).
+
+## Word2Vec's Skip-Gram Objective
+
+Given a word $w_t$, skip-gram trains a vector so it's good at predicting the words around it:
+
+$$
+\mathcal{L} = -\sum_{t} \sum_{-c \le j \le c,\, j \ne 0} \log P(w_{t+j} \mid w_t)
+$$
+
+where $c$ is the context window size and $P(w_{t+j} \mid w_t)$ is computed from the dot product of the two words' vectors, passed through a softmax. Words that co-occur frequently get pushed toward similar vectors purely as a side effect of minimizing this loss — no one hand-labels "cat" and "dog" as similar.
+
+## Geometry Encodes Meaning
+
+The famous result from this training scheme is that vector arithmetic captures analogies:
+
+$$
+\vec{v}_{\text{king}} - \vec{v}_{\text{man}} + \vec{v}_{\text{woman}} \approx \vec{v}_{\text{queen}}
+$$
+
+| Relationship | Example pair | Captured by |
+| ------------ | ------------ | ----------- |
+| Gender | king → queen, man → woman | Consistent offset direction |
+| Verb tense | walk → walked, swim → swam | Consistent offset direction |
+| Country/capital | France → Paris, Japan → Tokyo | Consistent offset direction |
+
+This isn't guaranteed by the algorithm — it's an empirical property that falls out of training on enough text, and it's imperfect. But it demonstrated that distances and directions in embedding space could carry real semantic structure, not just serve as arbitrary IDs.
+
+## From Static to Contextual Embeddings
+
+Word2Vec and GloVe give every word a single, fixed vector — "bank" gets the same embedding whether it means a riverbank or a financial institution. Modern models (BERT, GPT, and other transformers) instead compute a *contextual* embedding: the vector for "bank" is recomputed from its surrounding sentence via self-attention, so the two senses end up in different places in vector space depending on context.
+
+```python
+# Static embedding: one vector per word, forever
+embedding = word2vec["bank"]
+
+# Contextual embedding: recomputed per occurrence
+embedding = transformer.encode(sentence)[position_of("bank")]
+```
+
+That shift — from a fixed lookup table to context-dependent vectors — is one of the main reasons transformer-based language models handle ambiguity and nuance so much better than the embedding models that came before them.

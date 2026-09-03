@@ -1,0 +1,48 @@
+# Backpropagation, Step by Step
+
+Backpropagation is the algorithm that computes how much each weight in a neural network contributed to the final error, so gradient descent knows which direction to move each one. It is nothing more than the chain rule, applied systematically through a computation graph.
+
+## Forward Pass
+
+Consider a tiny two-layer network: an input $x$, a hidden unit $h = \sigma(wx + b)$, and an output $\hat{y} = vh$, trained with squared error loss $\mathcal{L} = (\hat{y} - y)^2$.
+
+The forward pass computes each quantity left to right: $x \to h \to \hat{y} \to \mathcal{L}$, caching every intermediate value along the way. Those cached values are what backpropagation reuses — recomputing them during the backward pass would waste work.
+
+## Backward Pass: The Chain Rule
+
+To update $w$, we need $\partial \mathcal{L} / \partial w$. The chain rule decomposes it into a product of local derivatives, one per step in the forward pass:
+
+$$
+\frac{\partial \mathcal{L}}{\partial w} = \frac{\partial \mathcal{L}}{\partial \hat{y}} \cdot \frac{\partial \hat{y}}{\partial h} \cdot \frac{\partial h}{\partial w}
+$$
+
+Each factor is easy to compute in isolation:
+
+| Term | Value |
+| ---- | ----- |
+| $\partial \mathcal{L} / \partial \hat{y}$ | $2(\hat{y} - y)$ |
+| $\partial \hat{y} / \partial h$ | $v$ |
+| $\partial h / \partial w$ | $\sigma'(wx+b) \cdot x$ |
+
+Multiplying them together gives the gradient with respect to $w$, without ever writing out the full expression for $\mathcal{L}$ in terms of $w$.
+
+## Why "Back"-propagation
+
+The key insight is order: computing $\partial \mathcal{L}/\partial \hat{y}$ first and reusing it for every downstream derivative is far cheaper than recomputing the chain from scratch for every weight. In a network with millions of parameters sharing intermediate layers, this reuse is what makes training tractable — the cost of backpropagation is roughly the same as a single forward pass, regardless of how many parameters you have.
+
+## A Toy Implementation
+
+```python
+def backward(x, y, w, b, v):
+    h = sigmoid(w * x + b)
+    y_hat = v * h
+    dL_dyhat = 2 * (y_hat - y)
+    dyhat_dh = v
+    dh_dw = sigmoid_derivative(w * x + b) * x
+
+    dL_dw = dL_dyhat * dyhat_dh * dh_dw
+    dL_dv = dL_dyhat * h
+    return dL_dw, dL_dv
+```
+
+Autodiff frameworks like PyTorch and JAX generalize exactly this pattern to arbitrary computation graphs: every operation records its local derivative, and a single backward traversal multiplies them along every path from the loss back to each parameter.
